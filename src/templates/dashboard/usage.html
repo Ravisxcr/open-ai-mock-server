@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+
+{% block title %}Usage Analytics - OpenAI Mock Server{% endblock %}
+
+{% block content %}
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 pb-4 border-b border-gray-200">
+    <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-0">
+        <i class="fas fa-chart-bar text-blue-600 mr-2"></i> 
+        {% if api_key %}
+            Usage Analytics - {{ api_key.name }}
+        {% else %}
+            Usage Analytics
+        {% endif %}
+    </h1>
+    <div>
+        <button class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+            <i class="fas fa-download mr-2"></i> Export Data
+        </button>
+    </div>
+</div>
+
+<!-- Summary Stats -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+        <div class="flex items-center">
+            <div class="flex-1">
+                <div class="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1">
+                    Total Requests
+                </div>
+                <div class="text-2xl font-bold text-gray-800">{{ total_usage }}</div>
+            </div>
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-exchange-alt text-blue-600 text-lg"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+        <div class="flex items-center">
+            <div class="flex-1">
+                <div class="text-xs font-semibold text-green-600 uppercase tracking-wider mb-1">
+                    Date Range
+                </div>
+                <div class="text-lg font-bold text-gray-800">{{ date_range }}</div>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-calendar text-green-600 text-lg"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+        <div class="flex items-center">
+            <div class="flex-1">
+                <div class="text-xs font-semibold text-purple-600 uppercase tracking-wider mb-1">
+                    Most Used Endpoint
+                </div>
+                <div class="text-lg font-bold text-gray-800">
+                    {% if endpoint_usage %}
+                        {{ endpoint_usage.0.endpoint|title }}
+                    {% else %}
+                        None
+                    {% endif %}
+                </div>
+            </div>
+            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-star text-purple-600 text-lg"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+        <div class="flex items-center">
+            <div class="flex-1">
+                <div class="text-xs font-semibold text-yellow-600 uppercase tracking-wider mb-1">
+                    Peak Day
+                </div>
+                <div class="text-lg font-bold text-gray-800">
+                    {% for date, data in daily_usage.items %}
+                        {% if forloop.first %}{{ date|date:"M d" }}{% endif %}
+                    {% empty %}
+                        None
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-chart-line text-yellow-600 text-lg"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Daily Usage Chart -->
+    <div class="lg:col-span-1">
+        <div class="bg-white rounded-lg shadow-md border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800">Daily Usage Trend</h3>
+            </div>
+            <div class="p-6">
+                <canvas id="dailyUsageChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Endpoint Distribution -->
+    <div class="lg:col-span-1">
+        <div class="bg-white rounded-lg shadow-md border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800">Endpoint Distribution</h3>
+            </div>
+            <div class="p-6">
+                {% if endpoint_usage %}
+                    <canvas id="endpointChart" width="300" height="300"></canvas>
+                {% else %}
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-chart-pie text-2xl text-gray-400"></i>
+                        </div>
+                        <p class="text-gray-500">No usage data available</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API Key Usage Table -->
+<div class="bg-white rounded-lg shadow-md border border-gray-200">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-800">API Key Usage Breakdown</h3>
+    </div>
+    <div class="p-6">
+        {% if api_key_usage %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">API Key</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Requests</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Tokens</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for usage in api_key_usage %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ usage.api_key__name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ usage.requests }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ usage.tokens|default:"0" }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <button class="inline-flex items-center px-3 py-1 border border-blue-300 text-blue-600 rounded-md hover:bg-blue-50 transition-colors">
+                                    <i class="fas fa-chart-line mr-1"></i> Details
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-12">
+                <div class="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-table text-2xl text-gray-400"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">No Usage Data</h3>
+                <p class="text-gray-500">Start making API requests to see usage analytics.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Daily Usage Chart
+const dailyCtx = document.getElementById('dailyUsageChart').getContext('2d');
+const dailyData = {
+    {% if daily_usage %}
+    labels: [{% for date, data in daily_usage.items %}'{{ date|date:"M d" }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+    datasets: [{
+        label: 'Requests',
+        data: [{% for date, data in daily_usage.items %}{{ data.requests }}{% if not forloop.last %},{% endif %}{% endfor %}],
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 2,
+        fill: true
+    }, {
+        label: 'Tokens',
+        data: [{% for date, data in daily_usage.items %}{{ data.tokens }}{% if not forloop.last %},{% endif %}{% endfor %}],
+        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+        borderColor: 'rgba(255, 99, 132, 1)',
+        borderWidth: 2,
+        fill: true
+    }]
+    {% else %}
+    labels: [],
+    datasets: []
+    {% endif %}
+};
+
+new Chart(dailyCtx, {
+    type: 'line',
+    data: dailyData,
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Endpoint Distribution Chart
+{% if endpoint_usage %}
+const endpointCtx = document.getElementById('endpointChart').getContext('2d');
+const endpointData = {
+    labels: [{% for usage in endpoint_usage %}'{{ usage.endpoint|title }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+    datasets: [{
+        data: [{% for usage in endpoint_usage %}{{ usage.requests }}{% if not forloop.last %},{% endif %}{% endfor %}],
+        backgroundColor: [
+            '#FF6384',
+            '#36A2EB', 
+            '#FFCE56',
+            '#4BC0C0',
+            '#9966FF'
+        ]
+    }]
+};
+
+new Chart(endpointCtx, {
+    type: 'doughnut',
+    data: endpointData,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

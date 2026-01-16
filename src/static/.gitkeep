@@ -1,0 +1,2 @@
+# Create empty static directories
+# Django needs these directories to exist for static file handling
