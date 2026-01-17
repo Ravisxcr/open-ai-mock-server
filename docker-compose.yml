@@ -6,6 +6,7 @@ services:
     env_file:
       - .env
     volumes:
+      - ./src:/app
       - staticfiles_volume:/app/staticfiles
 
 

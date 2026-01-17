@@ -1,0 +1,101 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Vector Store - OpenAI Mock Server{% endblock %}
+
+{% block content %}
+<!-- Tab Switcher -->
+<div class="flex items-center gap-2 mb-6">
+    <a href="{% url 'file_list' %}" class="px-4 py-2 rounded-lg font-semibold transition-colors {% if request.resolver_match.url_name == 'file_list' %}bg-blue-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Files</a>
+    <a href="{% url 'vector_store_list' %}" class="px-4 py-2 rounded-lg font-semibold transition-colors {% if request.resolver_match.url_name == 'vector_store_list' or request.resolver_match.url_name == 'vector_store_detail' %}bg-blue-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Vector stores</a>
+</div>
+
+<!-- Back link -->
+<div class="mb-4">
+    <a href="{% url 'vector_store_list' %}" class="inline-flex items-center text-blue-600 hover:underline">
+        <i class="fas fa-arrow-left mr-2"></i> Vector stores
+    </a>
+</div>
+
+<!-- Vector Store Card -->
+<div class="bg-white rounded-xl shadow-md p-6 mb-8">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <i class="fas fa-database text-blue-600"></i> {{ vector_store.name|default:'Untitled vector store' }}
+            </h1>
+            <div class="text-gray-500 text-sm mt-1">ID: <span class="font-mono">vs_{{ vector_store.pk|stringformat:'x' }}</span></div>
+        </div>
+        <div class="flex gap-2 mt-4 md:mt-0">
+            <a href="{% url 'add_vector_entry' vector_store.pk %}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <i class="fas fa-plus mr-2"></i> Add files
+            </a>
+            <a href="#" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                <i class="fas fa-user-plus mr-2"></i> Create assistant
+            </a>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="flex items-center gap-2 text-gray-700"><i class="fas fa-chart-bar text-gray-400"></i> Estimated usage: <span class="ml-1">0 KB hours</span></div>
+        <div class="flex items-center gap-2 text-gray-700"><i class="fas fa-database text-gray-400"></i> Size: <span class="ml-1">0 KB</span></div>
+        <div class="flex items-center gap-2 text-gray-700"><i class="fas fa-clock text-gray-400"></i> Last active: <span class="ml-1">{{ vector_store.updated_at|date:'M d, Y, H:i'|default:'Never' }}</span></div>
+        <div class="flex items-center gap-2 text-gray-700"><i class="fas fa-calendar text-gray-400"></i> Created: <span class="ml-1">{{ vector_store.created_at|date:'M d, Y, H:i' }}</span></div>
+        <div class="flex items-center gap-2 text-gray-700"><i class="fas fa-infinity text-gray-400"></i> Expiration policy: <span class="ml-1">Never</span></div>
+        <div class="flex items-center gap-2 text-gray-700"><i class="fas fa-calendar-times text-gray-400"></i> Expires: <span class="ml-1">Never</span></div>
+    </div>
+</div>
+
+<!-- Files attached -->
+<div class="bg-white rounded-xl shadow-md p-6 mb-8">
+    <div class="flex items-center justify-between mb-2">
+        <h2 class="text-lg font-semibold text-gray-800">Files attached</h2>
+        <a href="{% url 'add_vector_entry' vector_store.pk %}" class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+            <i class="fas fa-plus mr-2"></i> Add files
+        </a>
+    </div>
+    {% if entries %}
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead>
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">File</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Uploaded</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for entry in entries %}
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">{{ entry.document_name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">{{ entry.created_at|date:"Y-m-d H:i" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="text-center py-8 text-gray-500">This vector store is empty.</div>
+    {% endif %}
+</div>
+
+<!-- Used by -->
+<div class="bg-white rounded-xl shadow-md p-6 mb-8">
+    <div class="flex items-center justify-between mb-2">
+        <h2 class="text-lg font-semibold text-gray-800">Used by</h2>
+        <a href="#" class="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm">
+            <i class="fas fa-plus mr-2"></i> Create assistant
+        </a>
+    </div>
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead>
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Resource</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-gray-500" colspan="2">Not used by any resources</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

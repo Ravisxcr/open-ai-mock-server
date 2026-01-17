@@ -9,6 +9,12 @@ from django.utils import timezone
 from datetime import timedelta
 from api_keys.models import APIKey, APIKeyUsage
 from .forms import CustomUserCreationForm, APIKeyForm
+from .models import StoredFile
+from django.views.generic.edit import FormView
+from django import forms
+from django.views.generic import ListView, DetailView
+from .models import VectorStore, VectorEntry
+from .forms import VectorStoreForm, VectorEntryForm
 
 
 class RegisterView(CreateView):
@@ -279,3 +285,114 @@ class DocumentationView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
+
+
+class StoredFileUploadForm(forms.ModelForm):
+    class Meta:
+        model = StoredFile
+        fields = ["file", "name"]
+
+
+class FileListView(LoginRequiredMixin, TemplateView):
+    template_name = "dashboard/files.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["files"] = StoredFile.objects.filter(user=self.request.user).order_by(
+            "-uploaded_at"
+        )
+        return context
+
+
+class FileUploadView(LoginRequiredMixin, FormView):
+    form_class = StoredFileUploadForm
+    template_name = "dashboard/upload_file.html"
+    success_url = reverse_lazy("file_list")
+
+    def form_valid(self, form):
+        stored_file = form.save(commit=False)
+        stored_file.user = self.request.user
+        stored_file.save()
+        messages.success(
+            self.request, f'File "{stored_file.name}" uploaded successfully!'
+        )
+        return super().form_valid(form)
+
+
+class FileDeleteView(LoginRequiredMixin, DeleteView):
+    model = StoredFile
+    template_name = "dashboard/delete_file.html"
+    success_url = reverse_lazy("file_list")
+
+    def get_queryset(self):
+        return StoredFile.objects.filter(user=self.request.user)
+
+    def delete(self, request, *args, **kwargs):
+        file_obj = self.get_object()
+        name = file_obj.name
+        response = super().delete(request, *args, **kwargs)
+        messages.success(request, f'File "{name}" deleted successfully!')
+        return response
+
+
+class VectorStoreListView(LoginRequiredMixin, ListView):
+    model = VectorStore
+    template_name = "dashboard/vector_stores.html"
+    context_object_name = "vector_stores"
+
+    def get_queryset(self):
+        return VectorStore.objects.filter(user=self.request.user).order_by(
+            "-created_at"
+        )
+
+
+class VectorStoreCreateView(LoginRequiredMixin, CreateView):
+    model = VectorStore
+    form_class = VectorStoreForm
+    template_name = "dashboard/create_vector_store.html"
+    success_url = reverse_lazy("vector_store_list")
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        messages.success(self.request, f'Vector Store "{form.instance.name}" created!')
+        return super().form_valid(form)
+
+
+class VectorStoreDetailView(LoginRequiredMixin, DetailView):
+    model = VectorStore
+    template_name = "dashboard/vector_store_detail.html"
+    context_object_name = "vector_store"
+
+    def get_queryset(self):
+        return VectorStore.objects.filter(user=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["entries"] = self.object.entries.all().order_by("-created_at")
+        return context
+
+
+class VectorEntryCreateView(LoginRequiredMixin, CreateView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["store_pk"] = self.kwargs["store_pk"]
+        return context
+
+    model = VectorEntry
+    form_class = VectorEntryForm
+    template_name = "dashboard/create_vector_entry.html"
+
+    def get_success_url(self):
+        return reverse_lazy(
+            "vector_store_detail", kwargs={"pk": self.object.vector_store.pk}
+        )
+
+    def form_valid(self, form):
+        from .models import VectorStore
+
+        store_pk = self.kwargs["store_pk"]
+        form.instance.vector_store = VectorStore.objects.get(
+            pk=store_pk, user=self.request.user
+        )
+        messages.success(self.request, f'Entry "{form.instance.document_name}" added!')
+        return super().form_valid(form)

@@ -14,7 +14,7 @@ def create_user():
     try:
         admin_user = config("ADMIN_USER", default="admin")
         admin_password = config("ADMIN_PASSWORD", default="admin123")
-        
+
         # Check if user already exists
         if User.objects.filter(username=admin_user).exists():
             print(f'⚠️ User "{admin_user}" already exists!')

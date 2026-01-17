@@ -29,7 +29,7 @@
     <div class="flex min-h-screen">
         <!-- Sidebar -->
         {% if user.is_authenticated %}
-        <nav class="w-64 bg-white shadow-lg fixed h-full lg:relative lg:block hidden lg:w-64">
+        <nav class="w-64 bg-white shadow-lg fixed h-screen lg:block hidden lg:w-64 overflow-y-auto">
             <div class="p-6">
                 <div class="flex flex-col items-center mb-8">
                     <i class="fas fa-robot text-4xl text-blue-600 mb-3"></i>
@@ -60,10 +60,9 @@
                         </a>
                     </li>
                     <li>
-                        <a class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors {% if request.resolver_match.url_name == 'settings' %}bg-blue-100 text-blue-600{% endif %}" 
-                           href="{% url 'settings' %}">
-                            <i class="fas fa-cog w-5"></i>
-                            <span class="ml-3">Settings</span>
+                        <a href="{% url 'file_list' %}" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors {% if request.resolver_match.url_name == 'file_list' %}bg-blue-100 text-blue-600{% endif %}">
+                            <i class="fas fa-folder-open w-5"></i>
+                            <span class="ml-3">Manage Files</span>
                         </a>
                     </li>
                     <li>
@@ -71,6 +70,19 @@
                            href="{% url 'documentation' %}">
                             <i class="fas fa-book w-5"></i>
                             <span class="ml-3">Documentation</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors {% if request.resolver_match.url_name == 'settings' %}bg-blue-100 text-blue-600{% endif %}" 
+                           href="{% url 'settings' %}">
+                            <i class="fas fa-cog w-5"></i>
+                            <span class="ml-3">Settings</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'vector_store_list' %}" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors {% if request.resolver_match.url_name == 'vector_store_list' %}bg-blue-100 text-blue-600{% endif %}">
+                            <i class="fas fa-database w-5"></i>
+                            <span class="ml-3">Vector Stores</span>
                         </a>
                     </li>
                 </ul>
@@ -151,6 +163,12 @@
                             <span class="ml-3">Documentation</span>
                         </a>
                     </li>
+                    <li>
+                        <a href="{% url 'vector_store_list' %}" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors {% if request.resolver_match.url_name == 'vector_store_list' %}bg-blue-100 text-blue-600{% endif %}">
+                            <i class="fas fa-database w-5"></i>
+                            <span class="ml-3">Vector Stores</span>
+                        </a>
+                    </li>
                     <li class="pt-4 border-t border-gray-200">
                         <a href="{% url 'logout' %}" class="flex items-center px-4 py-3 text-red-600 rounded-lg hover:bg-red-50 transition-colors">
                             <i class="fas fa-sign-out-alt w-5"></i>
@@ -163,7 +181,7 @@
         {% endif %}
         
         <!-- Main content -->
-        <main class="flex-1 lg:ml-0 {% if user.is_authenticated %}ml-0{% endif %} min-h-screen">
+        <main class="flex-1 lg:ml-64 min-h-screen">
             <div class="p-4 lg:p-8 {% if user.is_authenticated %}pt-16 lg:pt-8{% endif %}">
                 {% if messages %}
                     <div class="mb-6 space-y-3">
