@@ -15,6 +15,7 @@ from django import forms
 from django.views.generic import ListView, DetailView
 from .models import VectorStore, VectorEntry
 from .forms import VectorStoreForm, VectorEntryForm
+from django.http import FileResponse
 
 
 class RegisterView(CreateView):
@@ -330,9 +331,26 @@ class FileDeleteView(LoginRequiredMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         file_obj = self.get_object()
         name = file_obj.name
+        if file_obj.file:
+            file_obj.file.delete(save=False)
         response = super().delete(request, *args, **kwargs)
         messages.success(request, f'File "{name}" deleted successfully!')
         return response
+    
+
+class FileDownloadView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        stored_file = get_object_or_404(
+            StoredFile,
+            pk=pk,
+            user=request.user,
+        )
+
+        return FileResponse(
+            stored_file.file.open("rb"),
+            as_attachment=True,
+            filename=stored_file.name,
+        )
 
 
 class VectorStoreListView(LoginRequiredMixin, ListView):

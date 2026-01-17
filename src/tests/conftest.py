@@ -2,10 +2,6 @@ import os
 import pytest
 import requests
 
-# -----------------------------
-# Global Test Configuration
-# -----------------------------
-
 @pytest.fixture(scope="session")
 def base_url():
     """
@@ -21,7 +17,7 @@ def api_key():
     Set via env variable for security:
         export OPENAI_MOCK_API_KEY=sk-xxxx
     """
-    return os.getenv("OPENAI_MOCK_API_KEY", "sk-test123456789")
+    return os.getenv("OPENAI_MOCK_API_KEY", "sk-0ZE6DQEogW6TUutF87fhKSUgVTgarn67yymzomwBkY4jfrqb")
 
 
 @pytest.fixture(scope="session")
@@ -50,6 +46,7 @@ def api_client(session, base_url, headers):
     """
     Generic API client fixture
     """
+
     class APIClient:
         def post(self, endpoint, json=None):
             return session.post(

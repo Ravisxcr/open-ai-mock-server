@@ -39,7 +39,10 @@ urlpatterns = [
     # File storage URLs
     path("files/", views.FileListView.as_view(), name="file_list"),
     path("files/upload/", views.FileUploadView.as_view(), name="upload_file"),
-    path("files/<int:pk>/delete/", views.FileDeleteView.as_view(), name="delete_file"),
+    path("files/<uuid:pk>/delete/", views.FileDeleteView.as_view(), name="delete_file"),
+    path(
+        "files/<uuid:pk>/download/", views.FileDownloadView.as_view(), name="download_file"
+    ),
     # Vector store URLs
     path(
         "vector-stores/", views.VectorStoreListView.as_view(), name="vector_store_list"
@@ -50,12 +53,12 @@ urlpatterns = [
         name="create_vector_store",
     ),
     path(
-        "vector-stores/<int:pk>/",
+        "vector-stores/<uuid:pk>/",
         views.VectorStoreDetailView.as_view(),
         name="vector_store_detail",
     ),
     path(
-        "vector-stores/<int:store_pk>/add-entry/",
+        "vector-stores/<uuid:store_pk>/add-entry/",
         views.VectorEntryCreateView.as_view(),
         name="add_vector_entry",
     ),

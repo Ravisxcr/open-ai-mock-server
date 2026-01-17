@@ -34,7 +34,7 @@
                     <td class="px-6 py-4 whitespace-nowrap">{{ file.name }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">{{ file.uploaded_at|date:"Y-m-d H:i" }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <a href="{{ file.file.url }}" class="text-blue-600 hover:underline mr-4" target="_blank">Download</a>
+                        <a href="{% url 'download_file' file.pk %}" class="text-blue-600 hover:underline mr-4" target="_blank">Download</a>
                         <a href="{% url 'delete_file' file.pk %}" class="text-red-600 hover:underline">Delete</a>
                     </td>
                 </tr>
