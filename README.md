@@ -103,8 +103,8 @@ The fastest way to get started is using our automated setup scripts:
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/your-username/openai-mock-server.git
-   cd openai-mock-server
+   git clone https://github.com/Ravisxcr/open-ai-mock-server.git
+   cd open-ai-mock-server
    ```
 
 2. **Run Automated Setup**
@@ -193,12 +193,6 @@ For more control over the installation process:
    ```bash
    # Create superuser account (optional but recommended)
    python src/manage.py createsuperuser
-   ```
-
-5. **Initialize Default Data**
-   ```bash
-   # Create default API key plans and settings
-   python src/manage.py loaddata initial_data.json  # If available
    ```
 
 ## Quick Start
