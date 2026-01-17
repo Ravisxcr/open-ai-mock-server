@@ -12,6 +12,10 @@ from .utils import (
     get_available_models,
     generate_request_id,
 )
+from django.http import JsonResponse, HttpResponseNotFound
+from django.views import View
+from dashboard.models import VectorStore
+import json
 import time
 
 
@@ -367,4 +371,141 @@ class ModelDetailsView(APIView):
         return Response(
             {"error": {"message": f"Model {model_id} not found"}},
             status=status.HTTP_404_NOT_FOUND,
+        )
+
+
+class VectorStoreListCreateView(View):
+    def get(self, request):
+        stores = VectorStore.objects.all()
+        data = []
+        for store in stores:
+            data.append(
+                {
+                    "id": f"vs_{store.pk}",
+                    "object": "vector_store",
+                    "created_at": int(store.created_at.timestamp()),
+                    "name": store.name,
+                    "description": store.description,
+                    "bytes": 0,  # Placeholder
+                    "file_counts": {
+                        "in_progress": 0,
+                        "completed": 0,
+                        "failed": 0,
+                        "cancelled": 0,
+                        "total": 0,
+                    },
+                }
+            )
+        return JsonResponse({"object": "list", "data": data, "has_more": False})
+
+    def post(self, request):
+        body = json.loads(request.body.decode())
+        name = body.get("name", "Untitled")
+        description = body.get("description", "")
+        store = VectorStore.objects.create(
+            name=name, description=description, user=request.user
+        )
+        return JsonResponse(
+            {
+                "id": f"vs_{store.pk}",
+                "object": "vector_store",
+                "created_at": int(store.created_at.timestamp()),
+                "name": store.name,
+                "description": store.description,
+                "bytes": 0,
+                "file_counts": {
+                    "in_progress": 0,
+                    "completed": 0,
+                    "failed": 0,
+                    "cancelled": 0,
+                    "total": 0,
+                },
+            }
+        )
+
+
+class VectorStoreRetrieveUpdateDeleteView(View):
+    def get_store(self, vector_store_id, user):
+        pk = vector_store_id.replace("vs_", "")
+        try:
+            return VectorStore.objects.get(pk=pk, user=user)
+        except VectorStore.DoesNotExist:
+            return None
+
+    def get(self, request, vector_store_id):
+        store = self.get_store(vector_store_id, request.user)
+        if not store:
+            return HttpResponseNotFound()
+        return JsonResponse(
+            {
+                "id": f"vs_{store.pk}",
+                "object": "vector_store",
+                "created_at": int(store.created_at.timestamp()),
+                "name": store.name,
+                "description": store.description,
+                "bytes": 0,
+                "file_counts": {
+                    "in_progress": 0,
+                    "completed": 0,
+                    "failed": 0,
+                    "cancelled": 0,
+                    "total": 0,
+                },
+            }
+        )
+
+    def post(self, request, vector_store_id):
+        store = self.get_store(vector_store_id, request.user)
+        if not store:
+            return HttpResponseNotFound()
+        body = json.loads(request.body.decode())
+        name = body.get("name")
+        description = body.get("description")
+        if name is not None:
+            store.name = name
+        if description is not None:
+            store.description = description
+        store.save()
+        return JsonResponse(
+            {
+                "id": f"vs_{store.pk}",
+                "object": "vector_store",
+                "created_at": int(store.created_at.timestamp()),
+                "name": store.name,
+                "description": store.description,
+                "bytes": 0,
+                "file_counts": {
+                    "in_progress": 0,
+                    "completed": 0,
+                    "failed": 0,
+                    "cancelled": 0,
+                    "total": 0,
+                },
+            }
+        )
+
+    def delete(self, request, vector_store_id):
+        store = self.get_store(vector_store_id, request.user)
+        if not store:
+            return HttpResponseNotFound()
+        store.delete()
+        return JsonResponse(
+            {"id": vector_store_id, "object": "vector_store.deleted", "deleted": True}
+        )
+
+
+class VectorStoreSearchView(View):
+    def post(self, request, vector_store_id):
+        # Dummy implementation for search
+        body = json.loads(request.body.decode())
+        query = body.get("query", "")
+        # Return a dummy response
+        return JsonResponse(
+            {
+                "object": "vector_store.search_results.page",
+                "search_query": query,
+                "data": [],
+                "has_more": False,
+                "next_page": None,
+            }
         )

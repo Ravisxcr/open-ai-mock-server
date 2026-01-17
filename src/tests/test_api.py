@@ -4,14 +4,15 @@ Test script for OpenAI Mock Server API endpoints
 This script tests all the available endpoints to ensure they work correctly.
 """
 
+import pytest
 import requests
 import json
 
 # Configuration
 BASE_URL = "http://localhost:8000/v1"
-API_KEY = "sk-test123456789"  # This will need to be created in the dashboard
+API_KEY = "sk-0ZE6DQEogW6TUutF87fhKSUgVTgarn67yymzomwBkY4jfrqb"  # This will need to be created in the dashboard
 
-
+@pytest.fixture(scope="session")
 def test_endpoint(endpoint, data=None, method="POST"):
     """Test a specific API endpoint"""
     url = f"{BASE_URL}{endpoint}"

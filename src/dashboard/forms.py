@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from api_keys.models import APIKey
+from .models import VectorStore, VectorEntry
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -69,3 +70,15 @@ class APIKeyForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["expires_at"].required = False
+
+
+class VectorStoreForm(forms.ModelForm):
+    class Meta:
+        model = VectorStore
+        fields = ["name", "description"]
+
+
+class VectorEntryForm(forms.ModelForm):
+    class Meta:
+        model = VectorEntry
+        fields = ["document_name", "embedding", "metadata"]

@@ -22,4 +22,20 @@ urlpatterns = [
     path(
         "models/<str:model_id>", views.ModelDetailsView.as_view(), name="model_details"
     ),
+    # Vector stores endpoints
+    path(
+        "vector_stores",
+        views.VectorStoreListCreateView.as_view(),
+        name="vector_stores_list_create",
+    ),  # GET, POST
+    path(
+        "vector_stores/<str:vector_store_id>",
+        views.VectorStoreRetrieveUpdateDeleteView.as_view(),
+        name="vector_store_retrieve_update_delete",
+    ),  # GET, POST, DELETE
+    path(
+        "vector_stores/<str:vector_store_id>/search",
+        views.VectorStoreSearchView.as_view(),
+        name="vector_store_search",
+    ),  # POST
 ]

@@ -4,9 +4,10 @@ import uuid
 import secrets
 import string
 from datetime import datetime
+from core.models.base import UUIDTimeStampedModel
 
 
-class APIKey(models.Model):
+class APIKey(UUIDTimeStampedModel):
     """Model for managing API keys"""
 
     PLAN_CHOICES = [
@@ -22,7 +23,6 @@ class APIKey(models.Model):
         ("expired", "Expired"),
     ]
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="api_keys")
     name = models.CharField(max_length=100, help_text="Friendly name for the API key")
     key = models.CharField(max_length=64, unique=True, db_index=True)
@@ -39,8 +39,6 @@ class APIKey(models.Model):
     last_used = models.DateTimeField(null=True, blank=True)
 
     # Timestamps
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
     expires_at = models.DateTimeField(null=True, blank=True)
 
     # Permissions
