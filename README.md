@@ -162,13 +162,13 @@ For more control over the installation process:
 1. **Create Virtual Environment**
    ```bash
    # Create virtual environment
-   python -m venv venv
+   python -m venv .venv
    
    # Activate virtual environment
    # Windows
-   venv\Scripts\activate
+   .venv\Scripts\activate
    # Linux/macOS
-   source venv/bin/activate
+   source .venv/bin/activate
    ```
 
 2. **Install Dependencies**
